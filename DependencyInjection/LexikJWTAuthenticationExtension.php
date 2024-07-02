@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Argument\IteratorArgument;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Exception\LogicException;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
@@ -223,7 +224,8 @@ class LexikJWTAuthenticationExtension extends Extension
             }
         }
         if ($config['access_token_verification']['enabled'] === true) {
-            $loader->load('web_token_verification.xml');
+            $phpLoader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+            $phpLoader->load('web_token_verification.php');
             $accessTokenLoader = 'lexik_jwt_authentication.access_token_loader';
             $accessTokenLoaderDefinition = $container->getDefinition($accessTokenLoader);
             $accessTokenLoaderDefinition
@@ -240,6 +242,14 @@ class LexikJWTAuthenticationExtension extends Extension
                     ->replaceArgument(10, $config['access_token_verification']['encryption']['allowed_key_encryption_algorithms'])
                     ->replaceArgument(11, $config['access_token_verification']['encryption']['allowed_content_encryption_algorithms'])
                     ->replaceArgument(12, $config['access_token_verification']['encryption']['keyset'])
+                ;
+            } else {
+                $accessTokenLoaderDefinition
+                    ->replaceArgument(8, null)
+                    ->replaceArgument(9, null)
+                    ->replaceArgument(10, null)
+                    ->replaceArgument(11, null)
+                    ->replaceArgument(12, null)
                 ;
             }
         }
